@@ -12,12 +12,12 @@ import ru.tinkoff.fintech.homework09.answers.monix.{Worker => AWorker}
 
 object Runner extends App {
   val http: Http = new Http {
-    val internet = Map[Url,Body](
+    val internet = Map[Url, Body](
       url("host0", "path0") -> List(url("host0", "path0"), url("host0", "path1"), url("host1", "path0")),
       url("host1", "path0") -> List(url("host1", "path1"), url("host2", "path0"), url("host3", "path0"))
     )
 
-    override def get(url: Url): Task[Body] = Task (
+    override def get(url: Url): Task[Body] = Task(
       internet.getOrElse(url, List.empty)
     )
   }
@@ -32,8 +32,8 @@ object Runner extends App {
 }
 
 class CrawlRoutines(
-  val http: Http,
-  val parseLinks: Parsr) extends Worker with Manager {
+                     val http: Http,
+                     val parseLinks: Parsr) extends Worker with Manager {
 
   def crawl(crawlUrl: Url): Task[Map[Host, Int]] = {
 

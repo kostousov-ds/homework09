@@ -1,4 +1,5 @@
 package ru.tinkoff.fintech.homework09.monix.crawler
+
 import monix.eval.Task
 import monix.eval.{Fiber, Task}
 import monix.execution.AsyncQueue
