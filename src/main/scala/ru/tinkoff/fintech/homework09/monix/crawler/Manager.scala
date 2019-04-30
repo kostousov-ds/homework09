@@ -1,12 +1,8 @@
 package ru.tinkoff.fintech.homework09.monix.crawler
 
-import monix.eval.Task
-import monix.eval.{Fiber, Task}
-import monix.execution.AsyncQueue
-import monix.execution.Scheduler.Implicits.global
 import cats.implicits._
-import scala.concurrent.duration._
-import ru.tinkoff.fintech.homework09.answers.monix.{Worker => AWorker}
+import monix.eval.Task
+import monix.execution.Scheduler.Implicits.global
 
 trait Manager {
   self: Worker =>
@@ -17,6 +13,7 @@ trait Manager {
         crawlUrl(data, url)
 
       case CrawlResult(url, links) =>
+        println(s"${Thread.currentThread().getName} result $url: $links")
         val data2 = data.copy(inProgress = data.inProgress - url)
 
         links.foldM(data2) {
@@ -53,9 +50,12 @@ trait Manager {
 
     crawlerQueue.take.flatMap { msg =>
       handleMessage(msg, data).flatMap { data2 =>
+        println(s"${Thread.currentThread().getName} in progress ${data2.inProgress}")
         if (data2.inProgress.isEmpty) {
+          println(s"${Thread.currentThread().getName} no progress tasks")
           data2.workers.values.map(_.fiber.cancel).toList.sequence_.map(_ => data2.referenceCount)
         } else {
+          println(s"${Thread.currentThread().getName} crawl --> ")
           crawler(crawlerQueue, data2)
         }
       }
