@@ -1,6 +1,9 @@
 package ru.tinkoff.fintech.homework09.monix
 
+import cats.effect.Async
+import monix.catnap.ConcurrentQueue
 import monix.eval.{Fiber, Task}
+import monix.execution.BufferCapacity.Bounded
 import monix.execution.{AsyncQueue, Scheduler}
 import ru.tinkoff.fintech.homework09.crawler.{HttpClient, Parser, Url => AUrl}
 
@@ -29,18 +32,19 @@ package object crawler {
 
   case class CrawlResult(url: Url, links: List[Url]) extends CrawlerMessage
 
-  class MQueue[T](q: AsyncQueue[T]) {
+  class MQueue[T](q: ConcurrentQueue[Task, T]) {
     def take: Task[T] = {
-      Task.deferFuture(q.poll())
+      q.poll
     }
 
     def offer(t: T): Task[Unit] = {
-      Task.eval(q.offer(t))
+//      Task.eval(q.offer(t))
+      q.offer(t)
     }
   }
 
   object MQueue {
-    def make[T](implicit scheduler: Scheduler): MQueue[T] = new MQueue(AsyncQueue.bounded(16))
+    def make[T](implicit scheduler: Scheduler): MQueue[T] = new MQueue(ConcurrentQueue.unsafe(Bounded(16)))
   }
 
 }

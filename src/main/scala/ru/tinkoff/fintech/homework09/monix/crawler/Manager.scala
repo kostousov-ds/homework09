@@ -2,10 +2,13 @@ package ru.tinkoff.fintech.homework09.monix.crawler
 
 import cats.implicits._
 import monix.eval.Task
-import monix.execution.Scheduler.Implicits.global
+import monix.execution.Scheduler
+//import monix.execution.Scheduler.Implicits.global
 
 trait Manager {
   self: Worker =>
+
+  implicit def scheduler: Scheduler
 
   def crawler(crawlerQueue: MQueue[CrawlerMessage], data: CrawlerData): Task[Map[Host, Int]] = {
     def handleMessage(msg: CrawlerMessage, data: CrawlerData): Task[CrawlerData] = msg match {

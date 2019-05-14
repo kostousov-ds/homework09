@@ -1,7 +1,8 @@
 package ru.tinkoff.fintech.homework09.monix.crawler
 
 import monix.eval.Task
-import monix.execution.Scheduler.Implicits.global
+import monix.execution.Scheduler
+//import monix.execution.Scheduler.Implicits.global
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
@@ -21,14 +22,19 @@ object Runner extends App {
 
   val parser: Parsr = (page: Body) => page
 
+  implicit val scheduler: Scheduler = Scheduler.fixedPool("general",10)
+
   println(
-    Await.result(new CrawlRoutines(http, parser).crawl(url("host0", "path0")).runToFuture, 10 seconds)
+    Await.result(new CrawlRoutines(http, parser)(scheduler).crawl(url("host0", "path0")).runToFuture, 10 seconds)
   )
 }
 
 class CrawlRoutines(
                      val http: Http,
-                     val parseLinks: Parsr) extends Worker with Manager {
+                     val parseLinks: Parsr)(val sch: Scheduler) extends Worker with Manager {
+
+
+  override implicit val scheduler: Scheduler = sch
 
   def crawl(crawlUrl: Url): Task[Map[Host, Int]] = {
 
